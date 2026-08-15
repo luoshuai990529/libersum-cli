@@ -6,9 +6,9 @@ export async function selectAgents(
   registry: AgentRegistry,
 ): Promise<readonly string[]> {
   const selected = await prompts.checkbox(
-    "请选择要安装的 Agent（Space 选中，Enter 确认）",
+    "选择 Agent（空格选择，Enter 继续）",
     registry.list().map((agent) => ({
-      name: `${agent.displayName} - ${agent.globalSkillDir}`,
+      name: agent.displayName,
       value: agent.id,
       checked: true,
     })),

@@ -31,6 +31,7 @@ npx libersum-cli
 ```
 
 按向导选择 Skill 和 Agent，多选时使用 Space，使用 Enter 确认。
+Skill 默认不选，完成选择后会先显示安装预览，提交确认后才执行安装。
 
 直接安装：
 
