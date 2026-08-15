@@ -1,0 +1,4 @@
+interface:
+  display_name: "Prepare PR/MR"
+  short_description: "安全整理提交并生成中文 GitHub PR 或 GitLab MR"
+  default_prompt: "请使用 prepare-pr-mr 审查当前 Git 工作树、整理提交、生成中文 PR/MR 描述，并在确认后发布。"

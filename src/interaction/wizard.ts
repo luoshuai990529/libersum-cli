@@ -5,6 +5,7 @@ import { executeInstallPlansWithManifest } from "../application/execute-install-
 import type { AtomicInstallResult } from "../infrastructure/filesystem/atomic-install.js";
 import type { ManifestStore } from "../infrastructure/state/manifest-store.js";
 import type { SkillSourceResolver } from "../infrastructure/sources/source-resolver.js";
+import { getBundledSkillsDirectory } from "../infrastructure/sources/bundled-source.js";
 import { selectAction } from "./action-menu.js";
 import { selectAgents } from "./agent-selector.js";
 import { defaultPromptRunner, type PromptRunner } from "./prompts.js";
@@ -17,6 +18,7 @@ export interface InteractiveWizardDependencies {
   readonly manifestStore?: ManifestStore;
   readonly homeDir?: string;
   readonly stateDir?: string;
+  readonly source?: string;
   readonly execute?: (plans: Awaited<ReturnType<typeof createInstallPlans>>) => Promise<AtomicInstallResult>;
 }
 
@@ -33,7 +35,7 @@ export async function runInteractiveWizard(
     throw new Error(`Unsupported action: ${action}`);
   }
 
-  const source = await prompts.input("请输入 Skill 来源（本地目录、GitHub 仓库或 URL）", ".");
+  const source = dependencies.source ?? getBundledSkillsDirectory();
   const discovered = await dependencies.resolver.discover(source);
   const selectedSkills = await selectSkills(prompts, discovered);
   const selectedAgents = await selectAgents(prompts, dependencies.registry);

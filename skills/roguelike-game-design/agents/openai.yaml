@@ -1,0 +1,6 @@
+interface:
+  display_name: "轻量肉鸽游戏设计"
+  short_description: "轻量肉鸽核心循环、数值、手感、UI/UX、美术与原型设计"
+  default_prompt: "Use $roguelike-game-design to turn this game idea into a testable roguelike design brief."
+policy:
+  allow_implicit_invocation: true

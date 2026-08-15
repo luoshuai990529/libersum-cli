@@ -1,0 +1,7 @@
+interface:
+  display_name: "项目架构分析"
+  short_description: "基于文档与代码梳理项目架构、场景、链路与竞品"
+  default_prompt: "使用 $analyze-project-architecture 生成一份简洁的中文项目架构分析。"
+
+policy:
+  allow_implicit_invocation: true
