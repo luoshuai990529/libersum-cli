@@ -1,6 +1,6 @@
 {
   "name": "libersum-cli",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Install and manage Agent Skills for local AI coding agents.",
   "type": "module",
   "files": [
