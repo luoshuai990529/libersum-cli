@@ -1,0 +1,7 @@
+node_modules/
+dist/
+coverage/
+.DS_Store
+
+# Local technical design, research and implementation notes are not part of the code release.
+docs/
