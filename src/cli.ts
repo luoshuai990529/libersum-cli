@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 
-import { existsSync } from "node:fs";
+import { existsSync, realpathSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { Command } from "commander";
 import { createInstallPlans } from "./application/create-install-plan.js";
 import { executeInstallPlansWithManifest } from "./application/execute-install-plan.js";
@@ -20,7 +21,7 @@ import { defaultPromptRunner } from "./interaction/prompts.js";
 import { errorResponse, okResponse } from "./output/response.js";
 import { renderResponse, resolveOutputFormat } from "./output/render.js";
 
-const VERSION = "0.1.0";
+const VERSION = "0.1.1";
 
 export interface CliDependencies {
   readonly homeDir?: string;
@@ -224,7 +225,20 @@ function reportError(error: unknown): number {
   return 1;
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+function isMainModule(): boolean {
+  const entrypoint = process.argv[1];
+  if (!entrypoint) {
+    return false;
+  }
+
+  try {
+    return realpathSync(fileURLToPath(import.meta.url)) === realpathSync(entrypoint);
+  } catch {
+    return false;
+  }
+}
+
+if (isMainModule()) {
   main().then((exitCode) => {
     process.exitCode = exitCode;
   });
