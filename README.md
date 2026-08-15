@@ -6,9 +6,16 @@
   <img src="https://img.shields.io/badge/Explore-F4D758?style=flat-square&labelColor=FEFCF6" alt="Chip Yellow" />
 </p>
 
-`libersum-cli` 是一个将 Agent Skill 安装到本地 Agent（Claude Code、Codex、Pi）的 CLI。
+`libersum-cli` 是 LiberSum99 的个人 Agent 工具宝典安装脚手架，负责把常用 Skill 安装到本地 Agent（Claude Code、Codex、Pi）。
 
 > 🕸️ 🕷 · AI · 连接 · 探索
+
+## 当前可安装 Skill
+
+个人 Skill 目录：`~/.codex/skills/`
+
+- `analyze-project-architecture/`：读取项目文档和核心代码，输出简洁的中文架构分析，涵盖技术栈、使用场景、核心链路时序图和竞品/替代方案
+- `prepare-pr-mr/`：在提交或创建 PR/MR 前核验分支、改动范围、测试和敏感信息，排除无关文档并生成中文提交说明
 
 ## 使用
 
@@ -23,7 +30,7 @@ npx libersum-cli
 非交互模式：
 
 ```bash
-npx libersum-cli skill install ./skills \
+npx libersum-cli skill install ~/.codex/skills \
   --skill analyze-project-architecture \
   --agent claude-code \
   --agent codex \
