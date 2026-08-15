@@ -21,7 +21,7 @@ import { defaultPromptRunner } from "./interaction/prompts.js";
 import { errorResponse, okResponse } from "./output/response.js";
 import { renderResponse, resolveOutputFormat } from "./output/render.js";
 
-const VERSION = "0.1.1";
+const VERSION = "0.1.2";
 
 export interface CliDependencies {
   readonly homeDir?: string;
