@@ -2,6 +2,7 @@ import type { AgentRegistry } from "../domain/agent.js";
 import type { InstallMethod, InstallSkillCommand } from "../domain/skill.js";
 import { createInstallPlans } from "../application/create-install-plan.js";
 import { executeInstallPlansWithManifest } from "../application/execute-install-plan.js";
+import type { InstallPlan } from "../application/install-skill.js";
 import type { AtomicInstallResult } from "../infrastructure/filesystem/atomic-install.js";
 import type { ManifestStore } from "../infrastructure/state/manifest-store.js";
 import type { SkillSourceResolver } from "../infrastructure/sources/source-resolver.js";
@@ -40,17 +41,9 @@ export async function runInteractiveWizard(
   const selectedSkills = await selectSkills(prompts, discovered);
   const selectedAgents = await selectAgents(prompts, dependencies.registry);
   const method = await prompts.select<InstallMethod>("请选择安装方式", [
-    { name: "symlink（推荐，便于统一更新）", value: "symlink" },
-    { name: "copy（兼容不支持 symlink 的环境）", value: "copy" },
+    { name: "symlink（推荐）", value: "symlink" },
+    { name: "copy（复制文件）", value: "copy" },
   ], "symlink");
-
-  const confirmed = await prompts.confirm(
-    `确认安装 ${selectedSkills.length} 个 Skill 到 ${selectedAgents.length} 个 Agent？`,
-    true,
-  );
-  if (!confirmed) {
-    return { status: "cancelled" };
-  }
 
   const command: InstallSkillCommand = {
     source,
@@ -65,6 +58,13 @@ export async function runInteractiveWizard(
     homeDir: dependencies.homeDir,
     stateDir: dependencies.stateDir,
   });
+
+  process.stderr.write(formatInteractiveInstallSummary(plans, method));
+  const submitted = await prompts.confirm("提交安装？", false);
+  if (!submitted) {
+    return { status: "cancelled" };
+  }
+
   const execute = dependencies.execute ?? ((installPlans) => {
     if (!dependencies.manifestStore) {
       throw new Error("manifestStore is required when using the default executor");
@@ -80,4 +80,17 @@ export async function runInteractiveWizard(
   });
 
   return { status: "installed", result: await execute(plans) };
+}
+
+export function formatInteractiveInstallSummary(
+  plans: readonly InstallPlan[],
+  method: InstallMethod,
+): string {
+  const skills = [...new Set(plans.map((plan) => plan.skill.name))].join(", ");
+  const agents = [...new Map(
+    plans.flatMap((plan) => plan.targets.map((target) => [target.agentId, target.agent.displayName] as const)),
+  ).values()].join(", ");
+  const targetCount = plans.reduce((count, plan) => count + plan.targets.length, 0);
+
+  return `\n安装预览\n  Skill  ${skills}\n  Agent  ${agents}\n  方式   ${method}\n  目标   ${targetCount} 个安装位置\n`;
 }
