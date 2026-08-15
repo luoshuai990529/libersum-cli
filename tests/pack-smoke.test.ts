@@ -17,6 +17,10 @@ test("npm package contains the built binary and excludes source files", async ()
 
   assert.equal(files.includes("dist/cli.js"), true);
   assert.equal(files.includes("README.md"), true);
+  assert.equal(files.includes("skills/analyze-project-architecture/SKILL.md"), true);
+  assert.equal(files.includes("skills/prepare-pr-mr/SKILL.md"), true);
+  assert.equal(files.includes("skills/roguelike-game-design/SKILL.md"), true);
   assert.equal(files.some((file) => file.startsWith("src/")), false);
   assert.equal(files.some((file) => file.startsWith("tests/")), false);
+  assert.equal(files.some((file) => file.startsWith("docs/")), false);
 });

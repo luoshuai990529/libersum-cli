@@ -1,0 +1,22 @@
+[
+  {"id":"pos-01","query":"我想做一个轻量肉鸽，但是核心玩法还没决定，帮我比较几种循环。","should_trigger":true,"family":"中文/玩法未定"},
+  {"id":"pos-02","query":"帮我设计一个微信小游戏的局内构筑、路线和三选一奖励。","should_trigger":true,"family":"中文/小游戏"},
+  {"id":"pos-03","query":"每次战斗后强化当前武器、新能力和金币怎么平衡？","should_trigger":true,"family":"中文/经济奖励"},
+  {"id":"pos-04","query":"我的 roguelite 只有一个程序和一个美术，怎样砍出两周原型？","should_trigger":true,"family":"中英/小团队"},
+  {"id":"pos-05","query":"请给这个 run-based game 做房间、敌人、奖励和失败循环。","should_trigger":true,"family":"英文/系统设计"},
+  {"id":"pos-06","query":"玩家说战斗手感很飘，帮我拆输入、响应、反馈和可测量指标。","should_trigger":true,"family":"中文/Game Feel"},
+  {"id":"pos-07","query":"帮我为像素风肉鸽建立视觉层级、角色状态和资产验收表。","should_trigger":true,"family":"中文/美术交付"},
+  {"id":"pos-08","query":"怎样让随机房间改变决策，而不是只是增加随机数量？","should_trigger":true,"family":"中文/随机与重玩"},
+  {"id":"pos-09","query":"Design and balance a short-run roguelike economy with run and meta currencies.","should_trigger":true,"family":"英文/数值"},
+  {"id":"pos-10","query":"未来要移植到抖音小游戏，先给 Web 原型的适配边界和验收清单。","should_trigger":true,"family":"中文/平台边界"},
+  {"id":"neg-01","query":"请把这段小说改成更有悬念的第一人称叙事。","should_trigger":false,"family":"中文/剧情写作"},
+  {"id":"neg-02","query":"帮我画一张像素风角色立绘，不需要玩法设计。","should_trigger":false,"family":"中文/纯美术"},
+  {"id":"neg-03","query":"写一个 Unity 角色移动脚本，要求支持八方向输入。","should_trigger":false,"family":"中文/纯引擎实现"},
+  {"id":"neg-04","query":"给我一套通用的游戏公司招聘面试题。","should_trigger":false,"family":"中文/通用资料"},
+  {"id":"neg-05","query":"Create a fantasy game logo with a transparent background.","should_trigger":false,"family":"英文/纯图像生成"},
+  {"id":"neg-06","query":"帮我修复一个 JavaScript 数组越界 bug。","should_trigger":false,"family":"中文/通用代码调试"},
+  {"id":"neg-07","query":"请为一个线性剧情 RPG 写三幕故事大纲，不涉及系统。","should_trigger":false,"family":"中文/剧情设计"},
+  {"id":"neg-08","query":"帮我把一张 PNG 压缩到更小，但不要改变画面。","should_trigger":false,"family":"中文/资源处理"},
+  {"id":"neg-09","query":"How do I deploy a React app to a static hosting provider?","should_trigger":false,"family":"英文/部署实现"},
+  {"id":"neg-10","query":"设计一个企业后台的登录和权限管理页面。","should_trigger":false,"family":"中文/企业 UI"}
+]

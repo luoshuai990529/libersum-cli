@@ -11,6 +11,7 @@ import type { InstallMethod, InstallSkillCommand } from "./domain/skill.js";
 import { createDefaultAgentRegistry } from "./infrastructure/agents/agent-registry.js";
 import { executeInstallPlans } from "./infrastructure/filesystem/atomic-install.js";
 import { CompositeSkillSourceResolver } from "./infrastructure/sources/github-source.js";
+import { getBundledSkillsDirectory } from "./infrastructure/sources/bundled-source.js";
 import type { SkillSourceResolver } from "./infrastructure/sources/source-resolver.js";
 import { JsonManifestStore } from "./infrastructure/state/json-manifest-store.js";
 import type { ManifestStore } from "./infrastructure/state/manifest-store.js";
@@ -34,6 +35,7 @@ export async function main(
 ): Promise<number> {
   const homeDir = dependencies.homeDir ?? os.homedir();
   const stateDir = path.join(homeDir, ".libersum-cli");
+  const bundledSource = getBundledSkillsDirectory();
   const registry = dependencies.registry ?? createDefaultAgentRegistry(homeDir);
   const resolver = dependencies.resolver ?? new CompositeSkillSourceResolver();
   const manifestStore = dependencies.manifestStore ?? new JsonManifestStore(path.join(stateDir, "manifest.json"));
@@ -47,6 +49,7 @@ export async function main(
         manifestStore,
         homeDir,
         stateDir,
+        source: bundledSource,
       });
       if (result.status === "cancelled") {
         process.stderr.write("已取消安装。\n");
@@ -63,7 +66,7 @@ export async function main(
     return reportError(new CliError("INTERACTIVE_REQUIRED", "当前环境不是 TTY，请使用 skill install 的显式参数。"));
   }
 
-  const program = createProgram({ homeDir, stateDir, registry, resolver, manifestStore });
+  const program = createProgram({ homeDir, stateDir, registry, resolver, manifestStore }, bundledSource);
   try {
     await program.parseAsync(["node", "libersum-cli", ...argv]);
     return 0;
@@ -72,7 +75,10 @@ export async function main(
   }
 }
 
-function createProgram(dependencies: Required<CliDependencies> & { stateDir: string }): Command {
+function createProgram(
+  dependencies: Required<CliDependencies> & { stateDir: string },
+  bundledSource: string,
+): Command {
   const program = new Command();
   program
     .name("libersum-cli")
@@ -117,7 +123,7 @@ function createProgram(dependencies: Required<CliDependencies> & { stateDir: str
   const skillCommand = program.command("skill").description("Discover and install Skills.");
   skillCommand
     .command("install [source]")
-    .description("Install selected Skills to selected Agents.")
+    .description("Install built-in or external Skills to selected Agents.")
     .option("--skill <name>", "Skill name; repeat for multiple Skills", collect, [])
     .option("--agent <agent>", "Agent ID; repeat for multiple Agents", collect, [])
     .option("--copy", "Copy the Skill instead of creating symlinks")
@@ -126,9 +132,7 @@ function createProgram(dependencies: Required<CliDependencies> & { stateDir: str
     .option("--yes", "Skip the confirmation prompt")
     .option("--format <format>", "Output format: json or table")
     .action(async (source: string | undefined, options: InstallOptions) => {
-      if (!source) {
-        throw new CliError("SOURCE_REQUIRED", "skill install 需要提供本地目录、GitHub 仓库或 URL。 ");
-      }
+      const effectiveSource = source ?? bundledSource;
       if (!options.yes && !process.stdin.isTTY) {
         throw new CliError("CONFIRMATION_REQUIRED", "非交互安装必须显式提供 --yes。 ");
       }
@@ -138,7 +142,7 @@ function createProgram(dependencies: Required<CliDependencies> & { stateDir: str
 
       const method: InstallMethod = options.copy ? "copy" : "symlink";
       const command: InstallSkillCommand = {
-        source,
+        source: effectiveSource,
         skillNames: options.skill,
         agents: options.agent,
         scope: "global",
