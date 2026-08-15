@@ -9,7 +9,7 @@
     "README.md"
   ],
   "bin": {
-    "libersum-cli": "./dist/cli.js"
+    "libersum-cli": "dist/cli.js"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",

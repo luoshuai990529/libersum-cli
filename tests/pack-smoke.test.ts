@@ -1,4 +1,5 @@
 import { execFile } from "node:child_process";
+import { readFile } from "node:fs/promises";
 import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
@@ -14,9 +15,13 @@ test("npm package contains the built binary and excludes source files", async ()
   });
   const report = JSON.parse(result.stdout)[0] as { files: Array<{ path: string }> };
   const files = report.files.map((file) => file.path);
+  const packageJson = JSON.parse(
+    await readFile(path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "package.json"), "utf8"),
+  ) as { bin?: Record<string, string> };
 
   assert.equal(files.includes("dist/cli.js"), true);
   assert.equal(files.includes("README.md"), true);
+  assert.equal(packageJson.bin?.["libersum-cli"], "dist/cli.js");
   assert.equal(files.includes("skills/analyze-project-architecture/SKILL.md"), true);
   assert.equal(files.includes("skills/prepare-pr-mr/SKILL.md"), true);
   assert.equal(files.includes("skills/roguelike-game-design/SKILL.md"), true);
