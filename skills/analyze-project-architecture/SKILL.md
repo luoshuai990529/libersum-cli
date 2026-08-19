@@ -63,13 +63,21 @@ description: Use when a repository needs a concise Chinese architecture analysis
 - 采用单向、低交叉布局，避免长句、重复箭头和无证据的内部细节；
 - 每个参与者和关键消息都能回溯到文档、入口文件、类/函数或 API。
 
-**图示工具顺序：**
+**图示工具：**
 
-1. **REQUIRED SUB-SKILL:** 如果可用，使用 `excalidraw` 生成真实 `.excalidraw` 源文件；
-2. 依次检查是否有 `excalidraw-diagram` 可用；
-3. 两者都不可用时，使用 Mermaid，并在报告中说明回退原因。
+1. **REQUIRED SUB-SKILL:** 必须使用 `archify` 生成图，不使用 Excalidraw 或 Mermaid 作为默认方案；
+2. 默认核心链路使用 Archify 的 `sequence` 类型；用户明确要求系统组件、基础设施或部署架构图时，使用 `architecture` 类型；
+3. 按 Archify 的 schema 和 example 创建全新的 JSON 规格，不能把项目事实直接套入示例内容；读者可见文字必须使用中文，但产品名、代码标识、命令、协议和 API 路径保持原文。
 
-使用 Excalidraw 时必须完成“生成源文件 → 导出 PNG/SVG → 查看渲染结果 → 修复裁切、重叠、文字不可读或箭头穿框 → 再导出”的闭环。没有查看渲染结果，不得声称图已验证。图中文字必须使用中文，文件与报告放在用户指定目录；未指定时沿用项目已有文档目录，否则使用 `docs/architecture/`。
+必须完成“生成 JSON 规格 → `validate` → `deliver` → `visual-check` → 查看截图并修复”的闭环。最终 `validate` 必须达到 Archify 的 showcase 质量要求：9/9 artifact checks、0 composition errors、0 warnings；`deliver` 和 `visual-check` 任一失败都不能声称图已交付。`visual-check` 的 `visualReview: pending` 仍需要人工查看截图，确认无裁切、重叠、溢出、文字不可读或箭头穿框。图文件与报告放在用户指定目录；未指定时沿用项目已有文档目录，否则使用 `docs/architecture/`。默认交付 Archify JSON 规格和独立 HTML；只有用户要求图片时才额外导出 PNG/SVG。
+
+命令中的 `<archify-skill-root>` 指当前可用的 `archify` skill 目录：
+
+```bash
+node <archify-skill-root>/bin/archify.mjs validate sequence <spec>.json --quality showcase --json
+node <archify-skill-root>/bin/archify.mjs deliver sequence <spec>.json <output>.html --quality showcase --json
+node <archify-skill-root>/bin/archify.mjs visual-check <output>.html --json
+```
 
 ### 4. 描述竞品和替代方案
 
@@ -84,7 +92,7 @@ description: Use when a repository needs a concise Chinese architecture analysis
 - [ ] 项目简介和技术栈短且一眼可读；
 - [ ] 使用场景来自文档或明确标记为代码推断；
 - [ ] 核心模块选择有理由，时序图是中文、简洁、低交叉且突出主链路；
-- [ ] Excalidraw 源文件和渲染结果存在，并完成视觉检查；
+- [ ] Archify JSON 规格通过 showcase 校验，HTML 已 deliver，并完成截图视觉检查；
 - [ ] 竞品结论有项目文档或 GitHub 来源，并标注时间边界；
 - [ ] 版本基准、外部依赖、主要风险和未知项没有被隐去；
 - [ ] 报告没有把完整代码、依赖清单或无关历史复制进去。
@@ -95,5 +103,5 @@ description: Use when a repository needs a concise Chinese architecture analysis
 - 把技术栈罗列当成架构分析：解释组件之间如何形成主链路；
 - 用代码推断冒充产品场景：标记 `[代码]` 或 `[推断]`，并用通俗语言解释；
 - 画成全系统大图：回到一个核心模块和一条主链路；
-- 图可以打开但未检查渲染：重新导出并实际查看 PNG/SVG；
+- 只生成 Archify JSON 或只执行 validate：继续执行 deliver、visual-check，并实际查看截图；
 - 竞品只报 star：补充定位、场景、链路和部署差异，并标注检索日期。
