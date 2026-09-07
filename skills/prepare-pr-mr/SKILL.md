@@ -7,7 +7,7 @@ description: Use when preparing local code for a commit, GitHub Pull Request, or
 
 ## Overview
 
-审查当前 Git worktree、提交历史和改动范围，形成只包含本次功能或修复的干净提交，并生成中文 PR/MR 描述。把 `push`、创建 PR/MR 和远程历史改写作为独立门禁；没有证据时停止，不用“先发出去再整理”替代检查。
+审查当前 Git worktree、提交历史和改动范围，形成只包含本次功能或修复的干净提交，并生成中文 PR/MR 描述。把 `push`、创建 PR/MR 和远程历史改写作为独立门禁；证据不足时暂停依赖它的提交或发布动作，继续安全的只读审阅和准备，不用“先发出去再整理”替代检查。
 
 ## 工作模式
 
@@ -30,7 +30,11 @@ git remote -v
 git log -1 --oneline --decorate
 ```
 
-立即停止并报告以下情况：detached HEAD、当前分支是目标分支或受保护分支、不是预期 worktree、存在无法区分归属的混合改动、没有 Git 仓库，或远程信息不足以安全发布。
+按模式处理，而不是停止整个任务：
+
+- `review`：detached HEAD、受保护分支或发布信息不足不阻止只读审阅；继续可验证部分，明确缺失证据。没有 Git 仓库或目录错误时，先定位已授权的正确仓库。
+- `prepare`：在目标/受保护分支、非预期 worktree、detached HEAD 或归属不明的混合改动上暂停暂存、提交和历史修改；继续只读分类，按现有授权建立正确分支或隔离工作区。
+- `submit`：目标、远程、身份、范围或明确批准不足时暂停发布；完成不依赖这些缺口的审阅和准备。
 
 保存并分别查看三类状态：
 
@@ -51,7 +55,7 @@ git ls-files --others --exclude-standard
 3. 当前分支的 upstream 对应的目标分支。
 4. 远程仓库声明的默认分支。
 
-如果有多个候选、只有本地 `main` 但没有远程证据，或用户只说“直接发出去”，停止并询问；不能凭习惯默认 `main`。
+如果按上述证据仍无法唯一确定目标，暂停依赖目标的动作并询问，继续独立的只读审阅；不能凭习惯默认 `main`。用户说“直接发出去”不能替代目标核验，但已有明确目标无需重复询问。
 
 识别远程平台和目标引用后，只更新远程引用，不自动合并：
 
@@ -151,7 +155,7 @@ commit 后再次检查 `git show --stat --oneline HEAD`、目标分支 diff、�
 
 ## 7. 受控 push 和创建 PR/MR
 
-发布前明确展示并请求确认：当前仓库、当前分支、目标远程/分支、最终 commit、提交文件范围、是否 squash、是否需要 `--force-with-lease`、测试/CI 状态和 PR/MR 是否 Draft。
+发布前明确展示并请求确认：当前仓库、当前分支、目标远程/分支、最终 commit、提交文件范围、是否 squash、是否需要 `--force-with-lease`、测试/CI 状态和 PR/MR 是否 Draft。已有明确批准只有覆盖同一最终 commit 及这些发布参数时才可复用；实质变化需重新确认。沉默不算批准。
 
 确认后再次获取远程 feature 分支旧 SHA，并检查目标分支没有变化。正常发布使用：
 
@@ -172,22 +176,25 @@ git push --force-with-lease=<feature-branch>:<expected-old-sha> <remote> HEAD:<f
 
 如果 remote 不是 GitHub/GitLab、认证失败、CLI 不存在或无法确认 fork/head，停止实际创建，只输出待执行命令和缺少的前置条件。默认创建 Draft；Ready for review、自动添加 reviewer/label/milestone 需要额外确认。创建后读取 PR/MR URL、base/source、文件范围和初始检查状态；没有读取到就写“未验证”，不能声称已创建或 CI 通过。
 
-## 快速门禁
+## 分阶段检查
 
-提交或发布前逐项回答“是”才能继续：
+`review` 输出实际取得的证据和缺口，不要求具备提交或发布资格。
+`prepare` 在提交前核对以下事项；任何一项不足时暂停依赖它的写入，
+继续只读调查和不受影响的准备：
 
-| 门禁 | 证据 |
+| 检查 | 证据 |
 | --- | --- |
 | 目标唯一且远程已 fetch | 目标分支 SHA 和 fetch 输出 |
 | 当前 worktree/branch 正确 | `git rev-parse`、`git branch`、`git worktree list` |
 | 改动只属于本次功能 | 分类后的 name-status 和用户意图 |
 | commit 粒度清晰 | commit tree 审查和 squash 决策 |
-| 暂存区干净 | cached diff、`git diff --check`、明确路径 |
-| 测试事实完整 | 实际命令和结果 |
-| 发布动作已确认 | 用户确认内容和最终 SHA |
-| 远程结果已验证 | push 输出、PR/MR 元数据和检查状态 |
+| 暂存区范围准确 | cached diff、`git diff --check`、明确路径 |
+| 测试事实完整 | 实际命令、结果及必要验证是否满足 |
 
-任一项为“否”或“未知”时停止，不用“问题不大”“先发再说”“force-with-lease 已经安全”“测试之后补”绕过门禁。规则的文字和精神都必须遵守。
+`submit` 发布前还必须核对第 7 节的明确批准及最终 SHA。
+远程结果不是首次发布的前置条件：发布后读取 push 输出、PR/MR 元数据
+和检查状态。未知时报告“发布结果未验证”，先核实再考虑重试，避免重复
+创建；不能声称发布成功或 CI 通过。失败或缺失证据不能靠措辞绕过。
 
 ## 常见错误与修正
 
@@ -201,7 +208,7 @@ git push --force-with-lease=<feature-branch>:<expected-old-sha> <remote> HEAD:<f
 | “没有目标分支就用 main” | 从远程事实确定；无法唯一确定就询问。 |
 | “PR 已创建，CI 应该会通过” | 读取真实 PR/MR 和 CI 结果，否则标记未验证。 |
 
-## Red Flags：立即停止
+## Red Flags：暂停相关动作，继续安全核验
 
 - 准备执行 `git add .`、`git add -A` 或 `git commit -a`。
 - 准备执行 `git commit --no-verify`、裸 `--force`、`reset --hard` 或 `clean`。
