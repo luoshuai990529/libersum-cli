@@ -1,5 +1,6 @@
 const bundledSummaries: Readonly<Record<string, string>> = {
   "analyze-project-architecture": "输出简洁的中文项目架构分析与核心链路图",
+  "libersum99-social-publishing": "按个人品牌制作公众号排版和小红书图文发布材料",
   "prepare-pr-mr": "整理代码改动并安全准备 GitHub PR/MR",
   "roguelike-game-design": "设计和迭代轻量 Roguelike 游戏系统",
 };

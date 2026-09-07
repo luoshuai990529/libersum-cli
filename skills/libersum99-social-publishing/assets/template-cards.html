@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LiberSum99 图文排版</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#e9e5dd;color:#1A1A2E;font-family:"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif}
+.cards{display:flex;flex-direction:column;align-items:center;gap:40px;padding:40px;min-width:1160px}
+.card{position:relative;width:1080px;height:1440px;padding:76px;overflow:hidden;background:#FEFCF6;flex-shrink:0}
+.kicker{font-size:28px;letter-spacing:5px;color:#2B7FD8;font-weight:700;margin:0 0 56px}
+h1,h2{font-family:"Songti SC",STSong,"Noto Serif CJK SC",serif;margin:0;font-weight:900;line-height:1.3;overflow-wrap:anywhere}
+h1{font-size:92px}h2{font-size:64px}p{font-size:40px;line-height:1.7;margin:28px 0}.red{color:#E84A5F}.blue{color:#2B7FD8}.muted{color:#575766}
+.rule{width:100px;height:8px;background:#F4D758;margin:36px 0}.author{display:flex;align-items:center;gap:24px;position:absolute;left:76px;right:76px;bottom:100px}.avatar{width:112px;height:112px;border-radius:50%;object-fit:cover}.author strong{font-size:32px}.author p{font-size:28px;margin:8px 0 0}.page{position:absolute;bottom:38px;right:76px;font-size:26px;color:#575766}
+.corner{position:absolute;top:48px;right:52px;width:150px;height:150px;opacity:.12}.panel{margin-top:52px;padding:36px;background:#FAF6EB;border-radius:18px}.panel h3{font-size:40px;line-height:1.4;margin:0 0 16px}.panel p{font-size:38px;margin:0}.note{padding:28px 32px;background:#FAF6EB;border-left:6px solid #2B7FD8;margin-top:44px;font-size:36px}.step{display:flex;gap:28px;margin-top:48px}.step b{font-size:48px;color:#2B7FD8}.step p{margin:0;font-size:38px}.signature{font-size:30px;color:#575766}
+</style>
+</head>
+<body>
+<!-- 示例文字仅展示版式；按用户原稿替换、增删卡片。 -->
+<main class="cards">
+<section class="card">
+<img class="corner" data-decoration src="assets/web-corner.svg" alt="">
+<p class="kicker">探索笔记</p>
+<h1>把探索<br>写成自己的<br><span class="red">技术笔记</span></h1>
+<div class="rule"></div>
+<p class="muted">记录尝试，也保留<br>还没有答案的问题。</p>
+<div class="author"><img class="avatar" src="assets/avatar.png" alt="LiberSum99"><div><strong>LiberSum99</strong><p>向上攀登，持续探索新技术。</p></div></div>
+<span class="page">01</span>
+</section>
+<section class="card">
+<p class="kicker">一次尝试</p>
+<h2>结果之外，<br>也写下<span class="blue">边界</span>。</h2>
+<div class="panel"><h3>我尝试了什么</h3><p>描述具体场景、操作与观察，<br>让经验有可以复查的依据。</p></div>
+<div class="panel"><h3>我还不知道什么</h3><p>保留样本范围与暂时的疑问，<br>不把一次尝试写成普遍结论。</p></div>
+<span class="page">02</span>
+</section>
+<section class="card">
+<p class="kicker">继续探索</p>
+<h2>让每一次记录，<br>成为下一步的<br><span class="red">起点</span>。</h2>
+<div class="rule"></div>
+<div class="step"><b>01</b><p>写下实际观察。</p></div>
+<div class="step"><b>02</b><p>保留适用范围。</p></div>
+<div class="step"><b>03</b><p>说明下一步想验证什么。</p></div>
+<div class="author"><img class="avatar" src="assets/avatar.png" alt="LiberSum99"><div><strong>LiberSum99</strong><p>向上攀登，持续探索新技术。</p></div></div>
+<span class="page">03</span>
+</section>
+</main>
+<!-- Adapted by LiberSum99 from ESTHER不二 (esthersjw)/esther-design-system. CC BY-NC-SA 4.0. -->
+</body>
+</html>

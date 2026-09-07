@@ -1,0 +1,4 @@
+interface:
+  display_name: "LiberSum99 自媒体排版"
+  short_description: "按个人品牌规范制作公众号排版与小红书图文，交付图片并保留可编辑源文件"
+  default_prompt: "使用 $libersum99-social-publishing 将我的原稿排版为公众号文章或小红书图文，直接交付发布材料。"
