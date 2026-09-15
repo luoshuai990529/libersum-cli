@@ -13,6 +13,7 @@ test("bundled catalog exposes the bundled LiberSum99 Skills", async () => {
       "libersum99-social-publishing",
       "prepare-pr-mr",
       "roguelike-game-design",
+      "wechat-article-compliance-review",
     ],
   );
 });

@@ -18,6 +18,10 @@ test("uses concise summaries for bundled Skills", () => {
     summarizeSkillDescription("roguelike-game-design", "long source description"),
     "设计和迭代轻量 Roguelike 游戏系统",
   );
+  assert.equal(
+    summarizeSkillDescription("wechat-article-compliance-review", "long source description"),
+    "审核公众号文稿的导流、广告、版权与内容风险",
+  );
 });
 
 test("normalizes and bounds external Skill descriptions to one line", () => {

@@ -3,6 +3,7 @@ const bundledSummaries: Readonly<Record<string, string>> = {
   "libersum99-social-publishing": "按个人品牌制作公众号排版和小红书图文发布材料",
   "prepare-pr-mr": "整理代码改动并安全准备 GitHub PR/MR",
   "roguelike-game-design": "设计和迭代轻量 Roguelike 游戏系统",
+  "wechat-article-compliance-review": "审核公众号文稿的导流、广告、版权与内容风险",
 };
 
 const MAX_SUMMARY_LENGTH = 64;

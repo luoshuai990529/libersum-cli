@@ -20,6 +20,7 @@
 | `libersum99-social-publishing` | 按 LiberSum99 品牌规范排版公众号原文、提炼小红书图文，交付图片与可修改 HTML。 |
 | `prepare-pr-mr` | 提交 PR/MR 前检查分支、改动、测试和敏感信息，并排除无关内容。 |
 | `roguelike-game-design` | 设计和比较轻量肉鸽游戏的循环、房间、路线、构筑、奖励和成长系统。 |
+| `wechat-article-compliance-review` | 审核公众号文稿的导流、广告、版权、隐私和内容风险，并输出发布前报告。 |
 
 Skill 源文件已随 CLI 发布包内置，使用者不需要先准备 `~/.codex/skills/`。
 
@@ -106,6 +107,23 @@ node dist/cli.js skill install --skill libersum99-social-publishing --agent code
 
 也可选择 `--agent claude-code` 或 `--agent pi`；实际排版需要对应 Agent 的文件与浏览器能力。
 npm 版本 0.1.3 起内置此 Skill，可将上面的 `node dist/cli.js` 换成 `npx libersum-cli@latest`。
+
+## 公众号文章规范审核
+
+`wechat-article-compliance-review` 用于在发布前审核既有公众号文稿中的诱导互动、链接跳转、广告、版权、隐私和 AI 标识风险。它只输出报告，不修改原稿，也不操作公众号后台。
+
+```bash
+npx libersum-cli@latest skill install \
+  --skill wechat-article-compliance-review \
+  --agent codex \
+  --yes
+```
+
+使用示例：
+
+> 使用 $wechat-article-compliance-review 审核下面这篇公众号文稿，给出发布结论和逐条风险报告。
+
+该 Skill 会区分可由文稿判断的风险与必须在公众号后台、手机预览、链接落地页或行业资质中继续核验的事项。它不构成法律意见。
 
 使用示例：
 
