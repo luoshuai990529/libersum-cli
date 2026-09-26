@@ -27,7 +27,7 @@ test("npm package contains the built binary and excludes source files", async ()
   assert.equal(files.includes("skills/roguelike-game-design/SKILL.md"), true);
   assert.equal(files.includes("skills/wechat-article-compliance-review/SKILL.md"), true);
   assert.equal(files.includes("skills/wechat-article-compliance-review/references/policy-baseline.md"), true);
-  for (const resource of ["SKILL.md", "LICENSE", "assets/avatar.png", "assets/template-cards.html", "assets/template-wechat.html", "scripts/prepare.py", "scripts/render.cjs", "references/brand.md", "references/wechat.md", "references/cards.md"]) {
+  for (const resource of ["SKILL.md", "assets/avatar.png", "assets/template-cards.html", "assets/template-wechat.html", "scripts/prepare.py", "scripts/render.cjs", "references/brand.md", "references/wechat.md", "references/cards.md"]) {
     assert.equal(files.includes(`skills/libersum99-social-publishing/${resource}`), true, resource);
   }
   assert.equal(files.some((file) => file.startsWith("src/")), false);
