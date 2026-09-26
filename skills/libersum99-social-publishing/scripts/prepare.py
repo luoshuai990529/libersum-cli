@@ -23,7 +23,6 @@ def main():
         for asset in (root / 'assets').iterdir():
             if asset.suffix in {'.png', '.svg'}:
                 shutil.copyfile(asset, output / 'assets' / asset.name)
-        shutil.copyfile(root / 'LICENSE', output / 'LICENSE')
     except Exception:
         shutil.rmtree(output)
         raise
