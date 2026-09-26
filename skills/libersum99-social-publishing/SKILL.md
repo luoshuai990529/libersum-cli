@@ -1,7 +1,6 @@
 ---
 name: libersum99-social-publishing
 description: Use when the user requests LiberSum99 个人品牌的微信公众号排版、小红书图文设计，或将原稿转成这两个平台的发布材料。支持正文、Markdown 与随附图片；不用于网站、App 或通用品牌设计。
-license: CC-BY-NC-SA-4.0
 ---
 
 # LiberSum99 自媒体排版
@@ -19,16 +18,12 @@ license: CC-BY-NC-SA-4.0
 
 ## 制作与交付
 
-1. 读 [品牌规范](references/brand.md)，再按平台读 [公众号](references/wechat.md) 或 [小红书](references/cards.md)。内容与平台的可读性优先于装饰；本 Skill 的分平台规范取代旧网页模板的响应式和动效要求。
+1. 读 [品牌规范](references/brand.md)，再按平台读 [公众号](references/wechat.md) 或 [小红书](references/cards.md)，为本篇选定一个配色方案。内容与平台的可读性优先于装饰；本 Skill 的分平台规范取代旧网页模板的响应式和动效要求。
 2. 读 [制作与导出](references/delivery.md)，用 `scripts/prepare.py` 将对应模板和资源复制到新的工作目录。保留原稿为 `source.md`，随附图片复制进输出的 `assets/`。从模板组合版式，按原稿长度调整结构，不强制章节数、页数或每页不同布局。
-3. 填入内容并移除无用示例。公众号保持连续阅读；小红书一页一个重点，同类内容使用一致结构。读 [组件选用](references/components.md) 选择合适的视觉表达。
+3. 填入内容并移除无用示例，将所选配色落实到复制后的 HTML；模板默认色不符时，同步调整底色、色块和强调色。公众号保持连续阅读；小红书一页一个重点，同类内容使用一致结构。读 [组件选用](references/components.md) 选择合适的视觉表达。
 4. 运行 `scripts/render.cjs`。检查导出图片的真实视觉效果：小红书逐张查看，公众号查看全文截图的各段。修复裁切、字号过小、密度失衡或缺图后重新导出到新目录。脚本只做机械检查，视觉审查和文案核对由 Agent 完成。
-5. 对照分平台验收要求交付源目录与导出文件。简短说明实际验证范围和主要文案变更。浏览器渲染通过不代表公众号编辑器已接受；没有平台实测就明确标记。环境缺少渲染能力时保留源文件并说明缺失步骤，不把 HTML 预览当成 PNG 成品。
+5. 对照分平台验收要求交付源目录与导出文件。简短说明实际验证范围和主要文案变更。浏览器渲染通过不代表公众号编辑器已接受；没有平台实测就明确标记。环境缺少渲染能力时保留源文件并说明缺失步骤，不把 HTML 预览当成 PNG 成品。当前 Skill 只制作发布材料，不登录账号或代为发布。
 
 ## 调用示例
 
 “用我的品牌风格，把下面这篇 Markdown 排成公众号文章，并提炼成一组小红书图文。公众号保留原文，小红书保留结论的适用范围，直接给发布材料。”
-
-## 来源
-
-从 LiberSum99 Personal IP Design System 提取并针对自媒体重整；原系统基于 ESTHER不二（esthersjw）的 esther-design-system。保留 [LICENSE](LICENSE) 与素材署名。安装 Skill 及制作材料不包含账号发布操作。
