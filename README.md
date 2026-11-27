@@ -18,7 +18,7 @@
 | --- | --- |
 | `analyze-project-architecture` | 基于项目文档和代码，输出简洁的中文架构、技术栈、场景、核心链路和竞品分析。 |
 | `libersum99-social-publishing` | 按 LiberSum99 品牌规范排版公众号原文、提炼小红书图文，交付图片与可修改 HTML。 |
-| `prepare-pr-mr` | 提交 PR/MR 前检查分支、改动、测试和敏感信息，并排除无关内容。 |
+| `prepare-pr-mr` | 创建 GitLab Draft MR，先 rebase 到指定目标分支，发布后由子 agent 审查本次改动。 |
 | `roguelike-game-design` | 设计和比较轻量肉鸽游戏的循环、房间、路线、构筑、奖励和成长系统。 |
 | `wechat-article-compliance-review` | 审核公众号文稿的导流、广告、版权、隐私和内容风险，并输出发布前报告。 |
 
