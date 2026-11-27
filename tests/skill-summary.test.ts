@@ -12,7 +12,7 @@ test("uses concise summaries for bundled Skills", () => {
   );
   assert.equal(
     summarizeSkillDescription("prepare-pr-mr", "long source description"),
-    "整理代码改动并安全准备 GitHub PR/MR",
+    "创建 GitLab Draft MR 并审查本次改动",
   );
   assert.equal(
     summarizeSkillDescription("roguelike-game-design", "long source description"),

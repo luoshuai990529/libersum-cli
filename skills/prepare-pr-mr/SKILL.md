@@ -1,219 +1,82 @@
 ---
 name: prepare-pr-mr
-description: Use when preparing local code for a commit, GitHub Pull Request, or GitLab Merge Request, especially when commit history may need review or squash, the target branch must be fetched safely, or unrelated Markdown plans and local debug hardcode must be excluded.
+description: Use only when the user explicitly asks to create a GitLab merge request (MR), including 开 MR, 提 MR, or 创建 Draft MR.
 ---
 
-# Prepare PR/MR
+# 创建 GitLab Draft MR
 
-## Overview
+用户明确要求创建 GitLab MR 时执行这条流程。单独提交代码、起草正文、审查代码和创建 GitHub PR 各自按原任务处理。
 
-审查当前 Git worktree、提交历史和改动范围，形成只包含本次功能或修复的干净提交，并生成中文 PR/MR 描述。把 `push`、创建 PR/MR 和远程历史改写作为独立门禁；证据不足时暂停依赖它的提交或发布动作，继续安全的只读审阅和准备，不用“先发出去再整理”替代检查。
+唯一需要用户介入的情况是缺少本次 MR 的目标分支。目标明确后，自行完成准备、推送、创建和审查。遇到问题先尝试安全的恢复或替代路径，确实无法继续时说明已完成的步骤和具体阻塞。
 
-## 工作模式
+## 1. 确认目标
 
-根据用户意图选择模式；不明确时先执行 `review`，不要直接发布。
+- 使用用户为本次 MR 指定的目标分支。缺少目标时直接问「这次 MR 要合到哪个分支？」。默认分支、upstream 和现有 MR 可提供候选，用户回答后再执行 rebase、暂存、提交或推送。
+- 核对当前仓库、worktree、源分支、GitLab 目标项目和推送 remote。跨 fork 时用 Git 和 GitLab 信息核实源、目标项目。使用可写的功能分支作为源分支。在目标分支或 detached HEAD 上时，从明确的提交点建立功能分支。已有 Git 操作正在进行时，保留现场，能隔离本次工作时使用独立 worktree。
+- 读取仓库适用于本次改动的工程文档。用 `git status --short --branch`、暂存和工作区 diff、未跟踪文件列表确认要保留的状态。
 
-- `review`：只读核验 worktree、目标分支、commit tree、diff、范围风险和测试缺口。
-- `prepare`：在范围确认后整理暂存区、创建本地 commit、生成中文 PR/MR 描述；不 push、不创建 PR/MR。
-- `submit`：在 `prepare` 证据完整且用户明确确认后 push、创建 Draft PR/MR，并检查远程结果。
+## 2. Rebase 到远端目标分支
 
-## 1. 建立安全基线
+- Fetch 指定的目标分支，记录取得的目标 SHA。检查源分支已有提交的范围。如果夹有无关提交，先把能确定属于本次 MR 的提交隔离到专用源分支。若无法确认隔离后仍包含完整改动，保留原分支并报告阻塞。
+- 工作区有未提交内容时，先完整保存暂存、未暂存和未跟踪文件，再 rebase。使用 `git stash push --include-untracked` 时记录自己创建的条目的 SHA，完成 rebase 后用 `git stash apply --index <stash-sha>` 恢复。核对状态和文件后，只清理本次创建的快照。无法可靠保存时，保护现场并报告阻塞。
+- 将功能分支 rebase 到该目标 SHA，再恢复保存的改动。根据本次需求、测试和目标分支上的现有行为解决两步中出现的冲突。若取舍会改变需求且缺少依据，保留可恢复状态，报告冲突文件和无法安全继续的原因。
+- 进入下一步前，用 `git merge-base --is-ancestor <target-sha> HEAD` 验证基线，并确认 rebase 已结束、无未解决冲突、原有未提交内容已恢复。
 
-先确认实际 checkout，不把用户的文字描述当作 Git 事实：
+## 3. 准备提交和 MR 正文
 
-```bash
-git rev-parse --show-toplevel
-git branch --show-current
-git status --short --branch
-git worktree list
-git remote -v
-git log -1 --oneline --decorate
-```
+- 检查目标 SHA 到 `HEAD` 的 diff、已有提交和待提交文件，确保 MR 只包含本次改动。按路径或补丁暂存相关内容，保留其他本地改动及其暂存状态。无关内容已暂存时，只有目标文件整份属于本次 MR 才用 `git commit --only -- <paths>`。需提交部分补丁时，先隔离对应补丁，无法可靠隔离时保留现状并报告阻塞。真实凭据和仅适用于本机的调试配置留在提交范围之外。
+- 如需新提交，先检查本次将提交的 diff，并按仓库规范写 commit message。已有提交覆盖本次改动时，直接使用。完成后用最终 diff 和 `git diff --check <target-sha>...HEAD` 核对范围。diff 为空时，告知用户没有可创建 MR 的改动。按仓库要求执行与改动直接相关的检查。本地无关改动会影响检查结果时，在最终提交的干净 checkout 中验证。
+- 根据最终 diff 和实际测试结果写中文 MR 正文。依次使用四个二级标题：`背景` 说明用户遇到的问题，`修改内容` 用 `1.`、`2.`、`3.` 这样的有序列表逐条写关键变更，`影响模块` 写到具体功能或接口，`测试覆盖` 说明实际命令、覆盖点、结果和有影响的未验证项。每条只讲一件事，用团队熟悉的词。
 
-按模式处理，而不是停止整个任务：
+## 4. 推送并创建 Draft MR
 
-- `review`：detached HEAD、受保护分支或发布信息不足不阻止只读审阅；继续可验证部分，明确缺失证据。没有 Git 仓库或目录错误时，先定位已授权的正确仓库。
-- `prepare`：在目标/受保护分支、非预期 worktree、detached HEAD 或归属不明的混合改动上暂停暂存、提交和历史修改；继续只读分类，按现有授权建立正确分支或隔离工作区。
-- `submit`：目标、远程、身份、范围或明确批准不足时暂停发布；完成不依赖这些缺口的审阅和准备。
+- 推送前核对远端源分支和关联的开放 MR。如果推送无法快进，或会改动本次 Draft 之外的 MR，从已验证的提交新建一个未被占用的专用源分支，再继续正常推送。用户明确限定源分支且无法安全推送时，报告具体阻塞。
+- 正常推送指定远端和源分支，例如 `git push "$push_remote" HEAD:"refs/heads/$source_branch"`。推送成功后，如有相同源、目标的开放 Draft，直接复用现有 MR 和正文。如无，则用 `glab mr create --draft --yes --repo "$target_project" --source-branch "$source_branch" --target-branch "$target_branch" --title "$title" --description-file "$body_file"` 创建 Draft，跨 fork 时补 `--head` 指定源项目。优先使用当前工具支持的文件或结构化参数传入正文。
+- 从 GitLab 核实 URL、Draft 状态、源与目标项目和分支，确认 MR head SHA 等于本次推送的 SHA。若命令结果不明，先读取远端分支和现有 MR 状态，再决定是否重试。
 
-保存并分别查看三类状态：
+## 5. 让子 agent 审查本次 MR
 
-```bash
-git diff --stat
-git diff --cached --stat
-git ls-files --others --exclude-standard
-```
+- 默认派一名只读子 agent，等待它完成。提供实际 MR 地址、GitLab 返回的 diff base/head SHA 和改动文件、适用的工程文档入口，以及本次变更意图。用这组 SHA 固定审查范围，优先用对应的完整 diff。GitLab 正在生成 diff 时短暂重查；若仍拿不到完整范围，或 diff head 与推送的 SHA 不一致，报告审查阻塞及原因。
+- 审查本次 diff 引入的回归风险、功能阻塞、可说明触发条件的性能问题，以及违反明确工程文档规范的地方。可沿调用链读少量上下文来验证影响。只报告有文件位置、触发条件和实际影响的可行动发现。约定不明确的风格偏好、无关存量问题和纯假设风险到此为止。
+- 主 agent 核对 findings 与对应 diff，合并重复项。审查结果写在当前对话中。子 agent 不可用时，说明实际状态；若主 agent 完成了同范围的审查，明确注明。
 
-不要自动执行 `git reset --hard`、`git clean`、删除分支、丢弃 stash 或自动 stash。不要用 `git add .`、`git add -A` 或 `git commit -a` 处理混合工作树；只对确认属于本次功能的明确路径执行 `git add -- <paths>` 或 `git add -p`。
+## 6. 交付
 
-## 2. 确定目标分支并安全 fetch
+第一行给出可点击的 Draft MR 地址及源 → 目标分支。随后写 `Code review`，按影响从高到低列问题，每条包含严重程度、文件和行号、触发条件、影响以及建议。没有有效发现时写「在本次 MR diff 中未发现需要处理的问题」。审查未完成时，给出已核实的 MR 链接和具体阻塞。
 
-按以下顺序确定目标分支：
+## 示例
 
-1. 用户明确指定的目标分支。
-2. 当前已有 PR/MR 的 base/target branch。
-3. 当前分支的 upstream 对应的目标分支。
-4. 远程仓库声明的默认分支。
+以下为同一个虚构场景。实际输出使用本次 MR 的内容、测试证据和审查结果。
 
-如果按上述证据仍无法唯一确定目标，暂停依赖目标的动作并询问，继续独立的只读审阅；不能凭习惯默认 `main`。用户说“直接发出去”不能替代目标核验，但已有明确目标无需重复询问。
-
-识别远程平台和目标引用后，只更新远程引用，不自动合并：
-
-```bash
-git ls-remote --exit-code --heads <remote> <target-branch>
-git fetch --no-tags <remote> <target-branch>:refs/remotes/<remote>/<target-branch>
-```
-
-记录 fetch 前后的目标 SHA。fetch 后重新检查当前分支和工作树。如果目标分支在审查或测试期间发生变化，重新计算 merge-base、diff、commit 审查和测试范围。
-
-## 3. 审查改动范围
-
-需要同时检查工作树改动和相对目标分支的提交范围：
-
-```bash
-git diff --name-status <remote>/<target-branch>...HEAD
-git diff --stat <remote>/<target-branch>...HEAD
-git diff --check <remote>/<target-branch>...HEAD
-git log --reverse --format='%h %an %ad %s' --date=short <remote>/<target-branch>..HEAD
-git show --stat --oneline <commit>
-```
-
-先取得本次功能或修复的意图：用户描述、issue、需求、已有 PR/MR 说明或代码中清晰可验证的功能边界。意图不明确且 diff 不能自解释时，列出“需要确认”的文件，不把猜测写成影响范围。
-
-将每个变更分类为：
-
-- **明确相关**：实现、测试、必要配置、必要文档和迁移。
-- **明确无关**：与本次功能无关的计划/方案/临时 Markdown、个人笔记、生成图表、调试脚本。
-- **需要确认**：可能是功能契约、测试 fixture、兼容性配置或发布资料的文档/配置。
-
-明确无关的文件不能进入提交。不能为了“干净”擅自删除用户文件；优先从暂存区排除，若已在历史中则提出清理历史的方案并等待确认。
-
-检查本地调试和疑似敏感值时结合上下文，不进行机械误报。重点核验：
-
-- 本机绝对路径、`localhost`、临时端口、临时 socket、个人目录。
-- 调试开关、注释掉的临时代码、`debug`/`scratch`/`temp` 文件。
-- token、API key、密码、私钥、真实凭据或看起来像凭据的硬编码值。
-
-测试 fixture、示例配置、平台兼容代码只有在能说明用途且不含真实凭据时才可保留。疑似真实凭据时停止提交，并提示轮换/撤销，不把值复制进终端输出或 PR/MR 描述。不要未经用户授权运行不受信任的第三方安全扫描器。
-
-## 4. Agent 审查 commit tree 和 squash
-
-必须提供独立的 commit 审查结果，至少覆盖：提交顺序、每个 commit 的功能边界、空提交、`wip`/`fix review`/`address comment`、重复修复、跨功能混合和 merge commit。
-
-如果有多 Agent 能力，派一个只读 reviewer，只给它原始 Git 证据和目标，不给预设结论；主 Agent 复核其输出。没有多 Agent 能力时，先完成一次“范围/历史审查”，再用另一遍“发布安全审查”复核，明确标记为单 Agent 双角色。
-
-按以下规则提出 squash 建议：
-
-- 同一功能内的实现、测试和紧随其后的 review 修补可合并。
-- 空提交、纯 typo、重复修复、`wip` 提交通常应合入相邻功能提交。
-- 不同功能、不同风险或不同发布目的必须保留为独立提交。
-- 非当前用户或非当前 feature 分支产生的提交、共享分支提交和无法确认归属的 merge commit 不自动改写。
-
-未经明确确认，不执行 rebase、reset、commit 历史重写或远程强制推送。确认后优先使用交互式 rebase，并在完成后重新检查 diff、commit tree 和测试；不要用 `git reset --soft <target>` 把未经审查的历史一键打包。
-
-已发布分支如必须改写，先 fetch 并记录远程旧 SHA，确认远程没有新提交，再使用带期望旧 SHA 的 `--force-with-lease`。远程分支发生分叉、包含他人提交或 lease 不匹配时停止，不能改用裸 `--force`。
-
-## 5. 测试、commit 和证据
-
-从仓库的 `AGENTS.md`、`CONTRIBUTING.md`、CI 配置、项目脚本和已变更模块确定测试命令；优先运行与改动直接相关的 lint、typecheck、单元测试和集成测试。不要把“测试以后再说”当作完成条件，也不要安装依赖或运行大范围命令而不说明成本。
-
-记录每个真实执行的命令、范围和结果：通过、失败、未执行、环境阻塞分别列出。命令成功不等于 CI 成功；只有实际读取到远程检查结果才能报告 CI 状态。
-
-提交前必须再次确认：
-
-```bash
-git diff --cached --check
-git diff --cached --name-status
-git status --short --branch
-```
-
-只提交已确认路径。遵循仓库已有的 commit 标题规范；除非用户另有要求，不为了中文 PR/MR 描述强行改变 commit 标题语言。不要使用 `--no-verify` 绕过 hooks；hook 失败时修复问题或报告阻塞。
-
-commit 后再次检查 `git show --stat --oneline HEAD`、目标分支 diff、工作树和测试结果。任何测试、格式化或生成步骤改变了文件，都要重新分类并复核暂存范围。
-
-## 6. 生成中文 PR/MR 描述
-
-正文固定只使用以下三块，每条提炼一个核心要点，不写未经验证的推测：
+### Draft MR 正文
 
 ```markdown
-## 改动范围
-- [文件/模块]：完成什么实现或修复。
-- [必要配置/迁移/测试]：为什么属于本次提交。
+## 背景
 
-## 影响功能范围
-- [用户功能/接口/后台任务/部署行为]：影响是什么。
-- [兼容性或风险]：只有有证据时填写；没有则写“未发现额外影响”。
+归档项目列表翻页时会丢掉搜索词，第二页开始可能混入无关项目。
 
-## 测试覆盖情况
-- 通过：`<实际命令>`，覆盖 `<范围>`。
-- 失败：`<实际命令>`，失败原因 `<事实>`。
-- 未执行：`<实际命令或范围>`，原因 `<事实>`。
-- CI：仅在实际检查结果存在时填写；否则写“待远程 CI 执行”。
+## 修改内容
+
+1. 翻页时读取当前生效的搜索词。
+2. 请求列表接口时同时传入搜索词和分页游标。
+3. 没有搜索词时沿用原有的分页请求。
+
+## 影响模块
+
+归档项目列表的搜索和分页。
+
+## 测试覆盖
+
+`pnpm vitest run src/projects/archive-list.test.ts` 通过，覆盖带搜索词翻页和无搜索词的普通分页。未执行浏览器端到端测试。
 ```
 
-不要加入无关计划 Markdown、个人笔记、调试 hardcode、未确认的影响、虚构 issue 链接、虚构 reviewer、虚构测试或本地绝对路径。发现 blocker 时不要生成“看起来可以合并”的正文；先报告 blocker 和证据。
+### 最终报告
 
-## 7. 受控 push 和创建 PR/MR
+```markdown
+Draft MR [!42 修复归档项目搜索后翻页丢失筛选条件](https://gitlab.example.com/acme/portal/-/merge_requests/42) · `fix/archive-search-pagination` → `dev`
 
-发布前明确展示并请求确认：当前仓库、当前分支、目标远程/分支、最终 commit、提交文件范围、是否 squash、是否需要 `--force-with-lease`、测试/CI 状态和 PR/MR 是否 Draft。已有明确批准只有覆盖同一最终 commit 及这些发布参数时才可复用；实质变化需重新确认。沉默不算批准。
+**Code review · 1 项发现**
 
-确认后再次获取远程 feature 分支旧 SHA，并检查目标分支没有变化。正常发布使用：
-
-```bash
-git push <remote> HEAD:<feature-branch>
+- **[P2] 修改搜索词时沿用了旧游标** · `src/projects/archive-list.ts:87`
+  在第 2 页输入新搜索词时，请求会从旧查询的游标位置继续读取，可能跳过新查询的首批结果。建议在搜索词变化时清空游标，并补一条覆盖该操作的测试。
 ```
-
-历史改写只使用：
-
-```bash
-git push --force-with-lease=<feature-branch>:<expected-old-sha> <remote> HEAD:<feature-branch>
-```
-
-根据 remote URL 判断平台：
-
-- GitHub：使用 `gh pr create --draft --base <target-branch> --head <feature-branch> --title <title> --body-file <body-file>`。
-- GitLab：使用 `glab mr create --draft --target-branch <target-branch> --source-branch <feature-branch> --title <title> --description <body>`，如版本参数不同先查看 `glab mr create --help`。
-
-如果 remote 不是 GitHub/GitLab、认证失败、CLI 不存在或无法确认 fork/head，停止实际创建，只输出待执行命令和缺少的前置条件。默认创建 Draft；Ready for review、自动添加 reviewer/label/milestone 需要额外确认。创建后读取 PR/MR URL、base/source、文件范围和初始检查状态；没有读取到就写“未验证”，不能声称已创建或 CI 通过。
-
-## 分阶段检查
-
-`review` 输出实际取得的证据和缺口，不要求具备提交或发布资格。
-`prepare` 在提交前核对以下事项；任何一项不足时暂停依赖它的写入，
-继续只读调查和不受影响的准备：
-
-| 检查 | 证据 |
-| --- | --- |
-| 目标唯一且远程已 fetch | 目标分支 SHA 和 fetch 输出 |
-| 当前 worktree/branch 正确 | `git rev-parse`、`git branch`、`git worktree list` |
-| 改动只属于本次功能 | 分类后的 name-status 和用户意图 |
-| commit 粒度清晰 | commit tree 审查和 squash 决策 |
-| 暂存区范围准确 | cached diff、`git diff --check`、明确路径 |
-| 测试事实完整 | 实际命令、结果及必要验证是否满足 |
-
-`submit` 发布前还必须核对第 7 节的明确批准及最终 SHA。
-远程结果不是首次发布的前置条件：发布后读取 push 输出、PR/MR 元数据
-和检查状态。未知时报告“发布结果未验证”，先核实再考虑重试，避免重复
-创建；不能声称发布成功或 CI 通过。失败或缺失证据不能靠措辞绕过。
-
-## 常见错误与修正
-
-| 诱因 | 正确处理 |
-| --- | --- |
-| “负责人很急，先发出去” | 先给最小证据报告；时间压力不扩大提交范围。 |
-| “直接 `git add .` 最快” | 只 add 明确相关路径；混合工作树先分类。 |
-| “用 `reset --soft` 一次 squash” | 先审查每个 commit，再经确认交互式 rebase。 |
-| “`--force-with-lease` 可以随便覆盖” | lease 只保护远程指针，不保证内容正确；远程分叉就停止。 |
-| “测试以后再补” | PR/MR 诚实标记未执行，必要测试通过前不宣称可合并。 |
-| “没有目标分支就用 main” | 从远程事实确定；无法唯一确定就询问。 |
-| “PR 已创建，CI 应该会通过” | 读取真实 PR/MR 和 CI 结果，否则标记未验证。 |
-
-## Red Flags：暂停相关动作，继续安全核验
-
-- 准备执行 `git add .`、`git add -A` 或 `git commit -a`。
-- 准备执行 `git commit --no-verify`、裸 `--force`、`reset --hard` 或 `clean`。
-- 目标分支、remote、功能意图或提交归属仍靠猜测。
-- diff 中出现无关计划文档、本地 debug hardcode、疑似凭据或个人路径。
-- 只看 `git status clean`，没有看相对目标分支的 diff。
-- 只因为用户着急就跳过 fetch、commit 审查或测试证据。
-- 没有实际命令输出却准备写“测试通过”“CI 通过”“PR/MR 已创建”。
